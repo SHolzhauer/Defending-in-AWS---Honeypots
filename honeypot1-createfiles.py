@@ -3,6 +3,9 @@ import csv
 from faker import Faker
 # Needed to generate pdf files
 from fpdf import FPDF
+import os
+os.mkdir("decoydata/")
+
 
 class Person:
 
@@ -25,7 +28,7 @@ header = ['first name', 'last name', 'email', 'address', 'bsn', 'bank']
 people = []
 
 # Generate fake data and write to CSV file
-with open('employee_details_feb_2023.csv', mode='w', newline='') as file:
+with open('decoydata/employee_details_feb_2023.csv', mode='w', newline='') as file:
     writer = csv.writer(file)
     
     # Write the header row
@@ -40,8 +43,6 @@ with open('employee_details_feb_2023.csv', mode='w', newline='') as file:
 
 
 # Create the department directories
-import os
-os.mkdir("decoydata/")
 departments = ["IT", "HR", "Sales", "Marketing", "Engineering"]
 for i in departments:
     # Create the directory
@@ -56,21 +57,19 @@ for person in people:
         # Create a new PDF object
         pdf = FPDF()
 
-        # Add new A4-sized pages to the PDF
-        pdf.add_page()
-        pdf.add_page()
-        pdf.add_page()
-
         # Set the font and font size
         pdf.set_font('Arial', 'B', 16)
-
-        # Write some Lorem Ipsum text to each page
-        pdf.cell(0, 10, 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.')
-        pdf.ln()
-        pdf.cell(1, 10, 'Proin sit amet odio eu quam fermentum bibendum.')
-        pdf.ln()
-        pdf.cell(2, 10, 'Mauris a ipsum vel mauris laoreet ultrices.')
-        pdf.ln()
+        
+        # Add new A4-sized pages to the PDF
+        for i in range(3):
+            pdf.add_page()
+            # Write some Lorem Ipsum text to each page
+            pdf.cell(0, 10, fake.paragraph(nb_sentences=random.randint(5, 35)))
+            pdf.ln()
+            pdf.cell(1, 10, fake.paragraph(nb_sentences=random.randint(5, 35)))
+            pdf.ln()
+            pdf.cell(2, 10, fake.paragraph(nb_sentences=random.randint(5, 35)))
+            pdf.ln()
 
         # Save the PDF file
         pdf.output(f"decoydata/{dept}/{person.last_name}-{person.first_name}.pdf", 'F')
