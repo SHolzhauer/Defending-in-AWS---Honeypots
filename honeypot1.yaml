@@ -6,16 +6,16 @@ Resources:
     Properties:
       BucketName: "s3-personelfiles"
       AccessControl: "Private"
-      Encryption:
+      BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               KMSMasterKeyID: !Ref KMSKey
               SSEAlgorithm: "aws:kms"
-        PublicAccessBlockConfiguration:
-          BlockPublicAcls: True
-          BlockPublicPolicy: True
-          IgnorePublicAcls: True
-          RestrictPublicBuckets: True
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
   
   KMSKey:
     Type: "AWS::KMS::Key"
