@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+  S3Bucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: "s3-personelfiles"
+      AccessControl: "Private"
+      Encryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              KMSMasterKeyID: !Ref KMSKey
+              SSEAlgorithm: "aws:kms"
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: True
+          BlockPublicPolicy: True
+          IgnorePublicAcls: True
+          RestrictPublicBuckets: True
+  
+  KMSKey:
+    Type: "AWS::KMS::Key"
+    Properties:
+      Description: "KMS key for S3 encryption of personel files"
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "Enable IAM User Permissions"
+            Effect: "Allow"
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - "kms:*"
+            Resource: "*"
+          - Sid: "Allow use of the key for S3 encryption"
+            Effect: "Allow"
+            Principal:
+              Service: "s3.amazonaws.com"
+            Action:
+              - "kms:Encrypt*"
+              - "kms:Decrypt*"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:Describe*"
+            Resource: "*"
+  
+  IAMRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: "app-humanresources"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "s3.amazonaws.com"
+            Action: "sts:AssumeRole"
+          - Effect: "Allow"
+            Principal:
+              Service: "ec2.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: "s3-access"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "s3:ListBucket"
+                Resource: !Sub "arn:aws:s3:::${S3Bucket}"
+              - Effect: "Allow"
+                Action:
+                  - "s3:GetObject"
+                  - "s3:PutObject"
+                  - "s3:DeleteObject"
+                Resource: !Sub "arn:aws:s3:::${S3Bucket}/*"
+              - Effect: "Allow"
+                Action:
+                  - "kms:Decrypt"
+                Resource: !GetAtt KMSKey.Arn
